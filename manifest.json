@@ -1,0 +1,16 @@
+{
+  "manifest_version": 2,
+  "name": "Dilbert Comic Strips",
+  "version": "1.0",
+  "default_locale": "en",
+  "description": "Displays Daily Dilbert strips",
+  "icons": {
+    "48": "icons/dilbert-48.png",
+    "128": "icons/dilbert-128.png"
+  },
+  "permissions": [ "http://dilbert.com/*", "http://assets.amuniversal.com/*" ],
+  "browser_action": {
+    "default_icon": "icons/dilbert.png",
+    "default_popup": "dilbert_popup.html"
+  }
+}
