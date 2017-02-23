@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Dilbert Comic Strips",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Displays Daily Dilbert strips",
   "icons": {
     "48": "icons/dilbert-48.png",

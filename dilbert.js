@@ -8,6 +8,7 @@ function setup() {
   base_url = "http://dilbert.com/strip/";
   var timezone = "America/Chicago";
 
+  today_comic_cached = false;
   var next = document.querySelector("#next");
   var previous = document.querySelector("#previous");
   var comic_date_form = document.querySelector("#comic-date-form");
@@ -32,7 +33,7 @@ function setup() {
 
     comic_date_form.value = comic_date;
     loading.style.display = "block";
-    getPage();
+    init();
   });
 
   previous.addEventListener("click", function (e) {
@@ -54,13 +55,13 @@ function setup() {
 
     comic_date_form.value = comic_date;
     loading.style.display = "block";
-    getPage();
+    init();
   });
 
   comic_date_form.addEventListener("change", function (e) {
     comic_date = e.target.value;
     loading.style.display = "block";
-    getPage();
+    init();
   });
 
   // fr-CA format is yyyy-MM-dd
@@ -72,12 +73,25 @@ function setup() {
   comic_date_form.value = today;
   comic_date = today;
 
-  getPage();
+  init();
+}
+
+function init() {
+  // Cache just the comic from the day
+  cache_name_base = "dilbert-" + comic_date;
+  comic_url = base_url + comic_date;
+
+  var comic_cached = localStorage.getItem(cache_name_base + ".data");
+
+  if (!comic_cached)
+    getPage();
+  else {
+    today_comic_cached = true;
+    showImage();
+  }
 }
 
 function getPage() {
-  comic_url = base_url + comic_date;
-
   var xhr = new XMLHttpRequest();
   xhr.open('GET', comic_url);
   xhr.onload = function () {
@@ -89,8 +103,13 @@ function getPage() {
     if (link != comic_url)
       return;
 
-    showImage(img);
+    // Cache only the comic of the day
+    if (comic_date === max_date)
+      cacheImageData(img);
+    else
+      showImage(img);
   };
+  xhr.onerror = connectionError;
   xhr.send();
 }
 
@@ -103,11 +122,65 @@ function showImage(img_tag) {
   link.href = comic_url;
   link.target = "_blank";
   image.width = 760;
-  image.src = img_tag.src;
-  title.innerHTML = comic_date + " - " + img_tag.alt;
   nav.style.display = "flex";
 
+  // Only the comic of the day will come from cache
+  if (comic_date === max_date) {
+    image.src = localStorage.getItem(cache_name_base + ".data");
+    title.innerHTML = comic_date + " - " + localStorage.getItem(cache_name_base + ".desc");
+  } else {
+    image.src = img_tag.src;
+    title.innerHTML = comic_date + " - " + img_tag.alt;
+  }
+
   image.addEventListener("load", function () {
+    loading.removeAttribute("style");
+    loading.innerHTML = "Loading...";
     loading.style.display = "none";
   });
+}
+
+function cacheImageData(img_tag) {
+  // We will cache only one comic, so this is the easy way to clear the old one
+  localStorage.clear();
+
+  localStorage.setItem(cache_name_base + ".desc", img_tag.alt);
+
+  toDataUrl(img_tag.src, function (img_data) {
+    localStorage.setItem(cache_name_base + ".data", img_data);
+    showImage();
+  });
+
+  today_comic_cached = true;
+}
+
+function toDataUrl(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.onload = function () {
+    var reader = new FileReader();
+    reader.onloadend = function () {
+      callback(reader.result);
+    }
+    reader.readAsDataURL(xhr.response);
+  };
+  xhr.open('GET', url);
+  xhr.responseType = 'blob';
+  xhr.send();
+}
+
+function connectionError() {
+  var message = "Error while loading, your internet connection does not seem to be working.";
+
+  if (today_comic_cached) {
+    var loading = document.querySelector("#loading");
+
+    loading.style.backgroundColor = "red";
+    loading.style.width = "550px";
+    loading.innerHTML = message;
+  } else {
+    var title = document.querySelector("#comic-title");
+
+    title.style.width = "550px";
+    title.innerHTML = message;
+  }
 }
