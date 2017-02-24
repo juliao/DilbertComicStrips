@@ -1,8 +1,9 @@
 {
   "manifest_version": 2,
   "name": "Dilbert Comic Strips",
-  "version": "1.1",
-  "description": "Displays Daily Dilbert strips",
+  "short_name": "DilbertComicStrips",
+  "version": "1.2",
+  "description": "Daily comic strips from Dilbert.com, see any previous comic strip just selecting the date, or use the commands Previous and Next.",
   "icons": {
     "48": "icons/dilbert-48.png",
     "128": "icons/dilbert-128.png"
