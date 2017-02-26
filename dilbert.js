@@ -26,10 +26,10 @@ function setup() {
     }
 
     // increment 1 day of current_date
-    var c_time = new Date().toLocaleString('fr-CA').slice(10);
+    var c_time = new Date().toLocaleString('fr-CA', {timeZone: timezone}).slice(10);
     var c_date = new Date(current_date + c_time);
     c_date.setDate(c_date.getDate() + 1);
-    comic_date = c_date.toLocaleString('fr-CA', {timeZone: timezone}).slice(0, -9);
+    comic_date = c_date.toLocaleString('fr-CA').slice(0, -9);
 
     comic_date_form.value = comic_date;
     loading.style.display = "block";
@@ -48,10 +48,10 @@ function setup() {
     }
 
     // decrement 1 day of current_date
-    var c_time = new Date().toLocaleString('fr-CA').slice(10);
+    var c_time = new Date().toLocaleString('fr-CA', {timeZone: timezone}).slice(10);
     var c_date = new Date(current_date + c_time);
     c_date.setDate(c_date.getDate() - 1);
-    comic_date = c_date.toLocaleString('fr-CA', {timeZone: timezone}).slice(0, -9);
+    comic_date = c_date.toLocaleString('fr-CA').slice(0, -9);
 
     comic_date_form.value = comic_date;
     loading.style.display = "block";
