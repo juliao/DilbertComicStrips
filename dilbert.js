@@ -4,6 +4,12 @@
 
 onload = setTimeout(setup, 0);
 
+// We need date in format yyyy-MM-dd, 'fr-CA' locale provide that.
+// And we need time in format hh:mm:ss, 'en-GB' locale provide that.
+
+// Dilbert.com seems to update website at the "America/Chicago" timezone,
+// so the math with dates take this in consideration.
+
 function setup() {
   base_url = "http://dilbert.com/strip/";
   var timezone = "America/Chicago";
@@ -26,10 +32,10 @@ function setup() {
     }
 
     // increment 1 day of current_date
-    var c_time = new Date().toLocaleString('fr-CA', {timeZone: timezone}).slice(10);
+    var c_time = new Date().toLocaleString('en-GB', {timeZone: timezone}).slice(10);
     var c_date = new Date(current_date + c_time);
     c_date.setDate(c_date.getDate() + 1);
-    comic_date = c_date.toLocaleString('fr-CA').slice(0, -9);
+    comic_date = c_date.toLocaleString('fr-CA');
 
     comic_date_form.value = comic_date;
     loading.style.display = "block";
@@ -48,10 +54,10 @@ function setup() {
     }
 
     // decrement 1 day of current_date
-    var c_time = new Date().toLocaleString('fr-CA', {timeZone: timezone}).slice(10);
+    var c_time = new Date().toLocaleString('en-GB', {timeZone: timezone}).slice(10);
     var c_date = new Date(current_date + c_time);
     c_date.setDate(c_date.getDate() - 1);
-    comic_date = c_date.toLocaleString('fr-CA').slice(0, -9);
+    comic_date = c_date.toLocaleString('fr-CA');
 
     comic_date_form.value = comic_date;
     loading.style.display = "block";
@@ -59,12 +65,14 @@ function setup() {
   });
 
   comic_date_form.addEventListener("change", function (e) {
+    next.removeAttribute("style");
+    previous.removeAttribute("style");
+    
     comic_date = e.target.value;
     loading.style.display = "block";
     init();
   });
 
-  // fr-CA format is yyyy-MM-dd
   var today = new Date().toLocaleString('fr-CA', {timeZone: timezone}).slice(0, -9);
   min_date = "1989-04-16";  // First available at dilbert.com
   max_date = today;
