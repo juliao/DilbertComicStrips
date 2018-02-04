@@ -35,7 +35,7 @@ function setup() {
     var c_time = new Date().toLocaleString('en-GB', {timeZone: timezone}).slice(10);
     var c_date = new Date(current_date + c_time);
     c_date.setDate(c_date.getDate() + 1);
-    comic_date = c_date.toLocaleString('fr-CA');
+    comic_date = c_date.toLocaleDateString('fr-CA');
 
     comic_date_form.value = comic_date;
     loading.style.display = "block";
@@ -57,7 +57,7 @@ function setup() {
     var c_time = new Date().toLocaleString('en-GB', {timeZone: timezone}).slice(10);
     var c_date = new Date(current_date + c_time);
     c_date.setDate(c_date.getDate() - 1);
-    comic_date = c_date.toLocaleString('fr-CA');
+    comic_date = c_date.toLocaleDateString('fr-CA');
 
     comic_date_form.value = comic_date;
     loading.style.display = "block";
@@ -73,7 +73,7 @@ function setup() {
     init();
   });
 
-  var today = new Date().toLocaleString('fr-CA', {timeZone: timezone}).slice(0, -9);
+  var today = new Date().toLocaleDateString('fr-CA', {timeZone: timezone});
   min_date = "1989-04-16";  // First available at dilbert.com
   max_date = today;
   comic_date_form.setAttribute("min", min_date);
