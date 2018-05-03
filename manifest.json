@@ -2,13 +2,13 @@
   "manifest_version": 2,
   "name": "Dilbert Comic Strips",
   "short_name": "DilbertComicStrips",
-  "version": "1.4",
+  "version": "1.5",
   "description": "Daily comic strips from Dilbert.com, see any previous comic strip just selecting the date, or use the commands Previous and Next.",
   "icons": {
     "48": "icons/dilbert-48.png",
     "128": "icons/dilbert-128.png"
   },
-  "permissions": [ "http://dilbert.com/*", "http://assets.amuniversal.com/*" ],
+  "permissions": [ "http://dilbert.com/*", "http://assets.amuniversal.com/*", "https://assets.amuniversal.com/*" ],
   "browser_action": {
     "default_icon": "icons/dilbert.png",
     "default_popup": "dilbert_popup.html"
