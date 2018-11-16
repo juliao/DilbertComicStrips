@@ -11,7 +11,7 @@ onload = setTimeout(setup, 0);
 // so the math with dates take this in consideration.
 
 function setup() {
-  base_url = "http://dilbert.com/strip/";
+  base_url = "https://dilbert.com/strip/";
   var timezone = "America/Chicago";
 
   today_comic_cached = false;
@@ -110,6 +110,11 @@ function getPage() {
 
     if (link != comic_url)
       return;
+
+    // 2018-11-18 Fix for the incorrect URL address, since dilbert.com migrate to https,
+    // now the img.src starts with "//", not "https://", so Chrome will replace src
+    // addresses starting with "//" with "chrome-extension//", I don't know why.
+    img.src = img.src.replace("chrome-extension", "https");
 
     // Cache only the comic of the day
     if (comic_date === max_date)
