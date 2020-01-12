@@ -1,199 +1,284 @@
 /**
- * Created by Juliao on 21/02/2017.
+ *
+ * This script is part of "Dilbert Comic Strips" Chrome Web Browser Extension, available at:
+ * https://chrome.google.com/webstore/detail/dilbert-comic-strips/gpjlhjgiccobkcodaeimjbcjckpcnbjp
+ *
+ * "Dilbert Comic Strips" fetches and displays the daily Dilbert's comic in the Chrome Web Browser.
+ *
+ *
+ * Extension main flux:
+ *
+ *  --> setupUI() --> loadComic(todayDate)
+ *                        |
+ *                        |
+ *                    isCached? --NO--> fetchComicPage() --> isTodaysComic? --YES--> cacheTodayComicImage(image)
+ *                        |                                      |                           |
+ *                        |YES                                   |NO                         |
+ *                        |                                      |                           |
+ *                 showComicImage() <----------------------------|<--------------------------|
+ *                        |
+ *                        |
+ *                       END
+ *
+ *
+ *
+ * Some observations:
+ *
+ * => Dilbert.com seems to delivery the daily comic at midnight in the "America/Chicago" timezone,
+ *    so the math with dates takes this in consideration.
+ *
+ * => Dilbert.com supports a mix of different date formats to fetch the comics, but here we choose
+ *    to use the date in the format yyyy-MM-dd, the 'fr-CA' locale provides that. And we also need
+ *    the time in the format hh:mm:ss for date's math, 'en-GB' locale provides that.
+ *
  */
 
-onload = setTimeout(setup, 0);
 
-// We need date in format yyyy-MM-dd, 'fr-CA' locale provide that.
-// And we need time in format hh:mm:ss, 'en-GB' locale provide that.
+// onLoad run:
+setTimeout(runExtension, 0);
 
-// Dilbert.com seems to update website at the "America/Chicago" timezone,
-// so the math with dates take this in consideration.
+const dilbertWebsite = "https://dilbert.com";
+const dilbertTimezone = "America/Chicago";
+const todayDate = new Date().toLocaleDateString('fr-CA', {timeZone: dilbertTimezone});
+const minDate = "1989-04-16";  // First comic available at dilbert.com
+const maxDate = todayDate;
+let selectedDate = null;
+let todayComicIsCached = false;
+let cacheNameBase = null;
+let comicUrl = null;
+let popupMsgBanner = null;
+let popupComicLink = null;
+let popupComicImage = null;
+let popupComicTitle = null;
+let popupNavButtons = null;
 
-function setup() {
-  base_url = "https://dilbert.com/strip/";
-  var timezone = "America/Chicago";
 
-  today_comic_cached = false;
-  var next = document.querySelector("#next");
-  var previous = document.querySelector("#previous");
-  var comic_date_form = document.querySelector("#comic-date-form");
-  var loading = document.querySelector("#loading");
-
-  next.addEventListener("click", function (e) {
-    var current_date = comic_date_form.value;
-    previous.removeAttribute("style");
-
-    if (current_date === max_date) {
-      next.style.color = "lightgray";
-      next.style.cursor = "default";
-
-      return;
-    }
-
-    // increment 1 day of current_date
-    var c_time = new Date().toLocaleString('en-GB', {timeZone: timezone}).slice(10);
-    var c_date = new Date(current_date + c_time);
-    c_date.setDate(c_date.getDate() + 1);
-    comic_date = c_date.toLocaleDateString('fr-CA');
-
-    comic_date_form.value = comic_date;
-    loading.style.display = "block";
-    init();
-  });
-
-  previous.addEventListener("click", function (e) {
-    var current_date = comic_date_form.value;
-    next.removeAttribute("style");
-
-    if (current_date === min_date) {
-      previous.style.color = "lightgray";
-      previous.style.cursor = "default";
-
-      return;
-    }
-
-    // decrement 1 day of current_date
-    var c_time = new Date().toLocaleString('en-GB', {timeZone: timezone}).slice(10);
-    var c_date = new Date(current_date + c_time);
-    c_date.setDate(c_date.getDate() - 1);
-    comic_date = c_date.toLocaleDateString('fr-CA');
-
-    comic_date_form.value = comic_date;
-    loading.style.display = "block";
-    init();
-  });
-
-  comic_date_form.addEventListener("change", function (e) {
-    next.removeAttribute("style");
-    previous.removeAttribute("style");
-    
-    comic_date = e.target.value;
-    loading.style.display = "block";
-    init();
-  });
-
-  var today = new Date().toLocaleDateString('fr-CA', {timeZone: timezone});
-  min_date = "1989-04-16";  // First available at dilbert.com
-  max_date = today;
-  comic_date_form.setAttribute("min", min_date);
-  comic_date_form.setAttribute("max", max_date);
-  comic_date_form.value = today;
-  comic_date = today;
-
-  init();
+/** Sets the user interface and load today's comic from Dilbert.com */
+function runExtension() {
+  setupUI();
+  loadComic(todayDate);
 }
 
-function init() {
-  // Cache just the comic from the day
-  cache_name_base = "dilbert-" + comic_date;
-  comic_url = base_url + comic_date;
+/** Assign action events to buttons and set defaults */
+function setupUI() {
+  popupMsgBanner = document.querySelector("#message-banner");
+  popupComicLink = document.querySelector("#comic-link");
+  popupComicImage = document.querySelector("#comic-image");
+  popupComicTitle = document.querySelector("#comic-title");
+  popupNavButtons = document.querySelector("#comic-nav");
 
-  var comic_cached = localStorage.getItem(cache_name_base + ".data");
+  const popupNextButton = document.querySelector("#next");
+  const popupPreviousButton = document.querySelector("#previous");
+  const popupDateFormPicker = document.querySelector("#comic-date-form");
 
-  if (!comic_cached)
-    getPage();
-  else {
-    today_comic_cached = true;
-    showImage();
+  // Disables the Next button since the extension loads the comic of the current day
+  popupNextButton.style.color = "lightgray";
+  popupNextButton.style.cursor = "default";
+
+  popupNextButton.addEventListener("click", function () {
+    let currentDate = popupDateFormPicker.value;
+
+    // Don't try to load a comic if the nextDate will be off the range
+    if (currentDate >= maxDate) {
+      return;
+    }
+
+    // Calc the next day of the currentDate
+    let nextDate = getDateAfterNDays(currentDate, +1);
+    popupDateFormPicker.value = nextDate;
+
+    // Restores the button style if it was previously disabled
+    if (popupPreviousButton.style.color === "lightgray") {
+      popupPreviousButton.removeAttribute("style");
+    }
+
+    // Disables the Next button if the max limit date will be hit
+    if (nextDate === maxDate) {
+      popupNextButton.style.color = "lightgray";
+      popupNextButton.style.cursor = "default";
+    }
+
+    popupMsgBanner.style.display = "block";
+    loadComic(nextDate);
+  });
+
+  popupPreviousButton.addEventListener("click", function (e) {
+    let currentDate = popupDateFormPicker.value; // Format: AAAA-MM-DD
+
+    // Don't try to load a comic if the previousDate will be off the range
+    if (currentDate <= minDate) {
+      return;
+    }
+
+    // Calc the previous day of the currentDate
+    let previousDate = getDateAfterNDays(currentDate, -1);
+    popupDateFormPicker.value = previousDate;
+
+    // Restores the button style if it was previously disabled
+    if (popupNextButton.style.color === "lightgray") {
+      popupNextButton.removeAttribute("style");
+    }
+
+    // Disables the Previous button if the min limit date is hit
+    if (previousDate === minDate) {
+      popupPreviousButton.style.color = "lightgray";
+      popupPreviousButton.style.cursor = "default";
+    }
+
+    popupMsgBanner.style.display = "block";
+    loadComic(previousDate);
+  });
+
+  popupDateFormPicker.addEventListener("change", function (e) {
+    popupNextButton.removeAttribute("style");
+    popupPreviousButton.removeAttribute("style");
+
+    let currentDate = e.target.value;
+
+    // Disables the Previous button or the Next button if some limit date is hit
+    if (currentDate === maxDate) {
+      popupNextButton.style.color = "lightgray";
+      popupNextButton.style.cursor = "default";
+    } else if (currentDate === minDate) {
+      popupPreviousButton.style.color = "lightgray";
+      popupPreviousButton.style.cursor = "default";
+    }
+
+    popupMsgBanner.style.display = "block";
+    loadComic(currentDate);
+  });
+
+  popupDateFormPicker.setAttribute("min", minDate);
+  popupDateFormPicker.setAttribute("max", maxDate);
+  popupDateFormPicker.value = todayDate;
+}
+
+/** Load comic */
+function loadComic(date) {
+  selectedDate = date;
+  cacheNameBase = "dilbert-" + selectedDate;
+  comicUrl = dilbertWebsite + "/strip/" + selectedDate;
+  let isCached = localStorage.getItem(cacheNameBase + ".desc");
+
+  if (isCached) {
+    todayComicIsCached = true;
+    showComicImage();
+  } else {
+    fetchComicPage();
   }
 }
 
-function getPage() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', comic_url);
-  xhr.onload = function () {
-    var div = document.createElement("div");
-    div.innerHTML = xhr.responseText;
-    var img = div.querySelector(".img-comic");
-    var link = div.querySelector(".img-comic-link");
-
-    if (link != comic_url)
-      return;
-
-    // 2018-11-18 Fix for the incorrect URL address, since dilbert.com migrate to https,
-    // now the img.src starts with "//", not "https://", so Chrome will replace src
-    // addresses starting with "//" with "chrome-extension//", I don't know why.
-    img.src = img.src.replace("chrome-extension", "https");
-
-    // Cache only the comic of the day
-    if (comic_date === max_date)
-      cacheImageData(img);
-    else
-      showImage(img);
-  };
-  xhr.onerror = connectionError;
-  xhr.send();
-}
-
-function showImage(img_tag) {
-  var link = document.querySelector("#comic-link");
-  var image = document.querySelector("#comic-image");
-  var title = document.querySelector("#comic-title");
-  var nav = document.querySelector("#comic-nav");
-  var loading = document.querySelector("#loading");
-  link.href = comic_url;
-  link.target = "_blank";
-  image.width = 760;
-  nav.style.display = "flex";
+/** Shows the comic image in the user interface */
+function showComicImage(imgTag=null) {
+  popupComicLink.href = comicUrl;
+  popupComicLink.target = "_blank";
+  popupComicImage.width = 760;
+  popupNavButtons.style.display = "flex";
 
   // Only the comic of the day will come from cache
-  if (comic_date === max_date) {
-    image.src = localStorage.getItem(cache_name_base + ".data");
-    title.innerHTML = comic_date + " - " + localStorage.getItem(cache_name_base + ".desc");
+  if (selectedDate === maxDate) {
+    popupComicImage.src = localStorage.getItem(cacheNameBase + ".data");
+    popupComicTitle.innerHTML = selectedDate + " - " + localStorage.getItem(cacheNameBase + ".desc");
   } else {
-    image.src = img_tag.src;
-    title.innerHTML = comic_date + " - " + img_tag.alt;
+    popupComicImage.src = imgTag.src;
+    popupComicTitle.innerHTML = selectedDate + " - " + imgTag.alt;
   }
 
-  image.addEventListener("load", function () {
-    loading.removeAttribute("style");
-    loading.innerHTML = "Loading...";
-    loading.style.display = "none";
+  // While the image is loading, show message.
+  popupComicImage.addEventListener("load", function () {
+    popupMsgBanner.removeAttribute("style");
+    popupMsgBanner.innerHTML = "Loading comic image...";
+    popupMsgBanner.style.display = "none";
   });
 }
 
-function cacheImageData(img_tag) {
+/** Loads the HTML page for the selected comic */
+function fetchComicPage() {
+  fetch(comicUrl).then(function (response) {
+    response.text().then(function (text) {
+      let div = document.createElement("div");
+      div.innerHTML = text;
+      let img = div.querySelector(".img-comic");
+      let link = div.querySelector(".img-comic-link");
+
+      if (link != comicUrl) {
+        return;
+      }
+
+      // 2018-11-18 Fix for the incorrect URL address, since dilbert.com migrated to https,
+      // now the img.src starts with "//", not "https://", so Chrome will replace src
+      // addresses starting with "//" with "chrome-extension//", I don't know why.
+      img.src = img.src.replace("chrome-extension", "https");
+
+      // Cache just the today's comic
+      if (selectedDate === maxDate) {
+        cacheTodayComicImage(img);
+      } else {
+        showComicImage(img);
+      }
+    })
+  }).catch(function (err) {
+    errorFetching('Error while fetching the page: ' + comicUrl);
+  });
+}
+
+/** Caches the today's comic */
+function cacheTodayComicImage(imgTag) {
   // We will cache only one comic, so this is the easy way to clear the old one
   localStorage.clear();
 
-  localStorage.setItem(cache_name_base + ".desc", img_tag.alt);
+  localStorage.setItem(cacheNameBase + ".desc", imgTag.alt);
 
-  toDataUrl(img_tag.src, function (img_data) {
-    localStorage.setItem(cache_name_base + ".data", img_data);
-    showImage();
+  fetchAndCacheTodayComicImage(imgTag.src, function (imgData) {
+    localStorage.setItem(cacheNameBase + ".data", imgData);
+    showComicImage();
   });
 
-  today_comic_cached = true;
+  todayComicIsCached = true;
 }
 
-function toDataUrl(url, callback) {
-  var xhr = new XMLHttpRequest();
-  xhr.onload = function () {
-    var reader = new FileReader();
-    reader.onloadend = function () {
-      callback(reader.result);
-    }
-    reader.readAsDataURL(xhr.response);
+/** Fetches and cache the today's comic image */
+function fetchAndCacheTodayComicImage(url, cacheImageCallback) {
+  fetch(url).then(function (response) {
+    return response.blob();
+  }).then(function (imageBlob) {
+    imageBlobToBase64(imageBlob, cacheImageCallback);
+  }).catch(function (err) {
+    errorFetching('Error while fetching the today\'s comic image from: ' + url);
+  });
+}
+
+/** Convert a image blob to base64 */
+function imageBlobToBase64(imageBlob, cacheImageCallback) {
+  let reader = new FileReader();
+  reader.onloadend = function () {
+    cacheImageCallback(reader.result);
   };
-  xhr.open('GET', url);
-  xhr.responseType = 'blob';
-  xhr.send();
+  reader.readAsDataURL(imageBlob);
 }
 
-function connectionError() {
-  var message = "Error while loading, your internet connection does not seem to be working.";
+/** Returns the date increased/decreased by nDays in the format AAAA-MM-DD */
+function getDateAfterNDays(todayDate, nDays) {
+  // Get the time part of the date in the 'en-GB' format (", HH:MM:SS"), adjusted to dilbertTimezone to form the new date
+  let currentTime = new Date().toLocaleString('en-GB', {timeZone: dilbertTimezone}).slice(10);
+  let newDate = new Date(todayDate + currentTime);
+  newDate.setDate(newDate.getDate() + nDays);
 
-  if (today_comic_cached) {
-    var loading = document.querySelector("#loading");
+  return newDate.toLocaleDateString('fr-CA');
+}
 
-    loading.style.backgroundColor = "red";
-    loading.style.width = "550px";
-    loading.innerHTML = message;
+/** Shows a message on fetch error */
+function errorFetching(message) {
+  console.debug(message);
+
+  // If none image is cached, can't show the error in popupMsgBanner easily, need to use popupComicTitle.
+  if (todayComicIsCached) {
+    popupMsgBanner.style.backgroundColor = "red";
+    popupMsgBanner.style.width = "550px";
+    popupMsgBanner.innerHTML = message;
   } else {
-    var title = document.querySelector("#comic-title");
-
-    title.style.width = "550px";
-    title.innerHTML = message;
+    popupComicTitle.style.color = "red";
+    popupComicTitle.style.width = "550px";
+    popupComicTitle.innerHTML = message;
   }
 }
