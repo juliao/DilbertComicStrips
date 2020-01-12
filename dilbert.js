@@ -1,7 +1,8 @@
 /**
  *
- * This script is part of "Dilbert Comic Strips" Chrome Web Browser Extension, available at:
- * https://chrome.google.com/webstore/detail/dilbert-comic-strips/gpjlhjgiccobkcodaeimjbcjckpcnbjp
+ * This script is part of "Dilbert Comic Strips" Web Browser Extension, available at:
+ * Chrome: https://chrome.google.com/webstore/detail/dilbert-comic-strips/gpjlhjgiccobkcodaeimjbcjckpcnbjp
+ * Firefox: https://addons.mozilla.org/en-US/firefox/addon/dilbert-comic-strips/
  *
  * "Dilbert Comic Strips" fetches and displays the daily Dilbert's comic in the Chrome Web Browser.
  *
@@ -135,6 +136,11 @@ function setupUI() {
 
     let currentDate = e.target.value;
 
+    if (currentDate === "" || currentDate < minDate || currentDate > maxDate) {
+      popupDateFormPicker.value = maxDate;
+      currentDate = maxDate;
+    }
+
     // Disables the Previous button or the Next button if some limit date is hit
     if (currentDate === maxDate) {
       popupNextButton.style.color = "lightgray";
@@ -178,16 +184,16 @@ function showComicImage(imgTag=null) {
   // Only the comic of the day will come from cache
   if (selectedDate === maxDate) {
     popupComicImage.src = localStorage.getItem(cacheNameBase + ".data");
-    popupComicTitle.innerHTML = selectedDate + " - " + localStorage.getItem(cacheNameBase + ".desc");
+    popupComicTitle.textContent = selectedDate + " - " + localStorage.getItem(cacheNameBase + ".desc");
   } else {
     popupComicImage.src = imgTag.src;
-    popupComicTitle.innerHTML = selectedDate + " - " + imgTag.alt;
+    popupComicTitle.textContent = selectedDate + " - " + imgTag.alt;
   }
 
   // While the image is loading, show message.
   popupComicImage.addEventListener("load", function () {
     popupMsgBanner.removeAttribute("style");
-    popupMsgBanner.innerHTML = "Loading comic image...";
+    popupMsgBanner.textContent = "Loading comic image...";
     popupMsgBanner.style.display = "none";
   });
 }
@@ -206,9 +212,9 @@ function fetchComicPage() {
       }
 
       // 2018-11-18 Fix for the incorrect URL address, since dilbert.com migrated to https,
-      // now the img.src starts with "//", not "https://", so Chrome will replace src
-      // addresses starting with "//" with "chrome-extension//", I don't know why.
-      img.src = img.src.replace("chrome-extension", "https");
+      // now the img.src starts with "//", not "https://", so Chrome will replace src addresses
+      // starting with "//" with "chrome-extension//", and Firefox will use "moz-extension//".
+      img.src = img.src.replace(/^.*\/\//, "https://");
 
       // Cache just the today's comic
       if (selectedDate === maxDate) {
@@ -260,8 +266,8 @@ function imageBlobToBase64(imageBlob, cacheImageCallback) {
 /** Returns the date increased/decreased by nDays in the format AAAA-MM-DD */
 function getDateAfterNDays(todayDate, nDays) {
   // Get the time part of the date in the 'en-GB' format (", HH:MM:SS"), adjusted to dilbertTimezone to form the new date
-  let currentTime = new Date().toLocaleString('en-GB', {timeZone: dilbertTimezone}).slice(10);
-  let newDate = new Date(todayDate + currentTime);
+  let currentTime = new Date().toLocaleString('en-GB', {timeZone: dilbertTimezone}).slice(12);
+  let newDate = new Date(todayDate + 'T' + currentTime);
   newDate.setDate(newDate.getDate() + nDays);
 
   return newDate.toLocaleDateString('fr-CA');
@@ -275,10 +281,10 @@ function errorFetching(message) {
   if (todayComicIsCached) {
     popupMsgBanner.style.backgroundColor = "red";
     popupMsgBanner.style.width = "550px";
-    popupMsgBanner.innerHTML = message;
+    popupMsgBanner.textContent = message;
   } else {
     popupComicTitle.style.color = "red";
     popupComicTitle.style.width = "550px";
-    popupComicTitle.innerHTML = message;
+    popupComicTitle.textContent = message;
   }
 }

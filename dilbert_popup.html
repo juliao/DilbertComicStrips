@@ -1,76 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title></title>
-  <script src="dilbert.js"></script>
-  <style>
-    #comic-title {
-      font-size: medium;
-      font-weight: 600;
-      padding-top: 1%;
-      padding-left: 1%;
-    }
-
-    #comic-nav {
-      display: none; /* flex */
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: flex-start;
-      height: 3em;
-    }
-
-    .nav-btn {
-      font-size: 1.8em;
-      font-weight: 600;
-      text-decoration: none;
-      color: gray;
-    }
-
-    .nav-btn:hover {
-      color: cornflowerblue;
-    }
-
-    #comic-date-form {
-      margin-top: 1%;
-    }
-
-    #previous {
-      margin-left: 8%;
-    }
-
-    #next {
-      margin-right: 10%;
-    }
-
-    #message-banner {
-      font-size: medium;
-      font-weight: 600;
-      padding-bottom: 0.5%;
-      padding-left: 1.5%;
-      padding-right: 1.5%;
-      background-color: black;
-      color: white;
-      position: absolute;
-      top: 14%;
-      left: 1%;
-      display: none;
-    }
-  </style>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="dilbert.css"/>
 </head>
 <body>
   <div id="message-banner"></div>
 
   <div id="comic-nav">
     <a href="#" id="previous" class="nav-btn">&blacktriangleleft; Previous</a>
-    <form>
-      <input type="date" id="comic-date-form">
-    </form>
+    <input type="date" id="comic-date-form">
     <a href="#" id="next" class="nav-btn">Next &blacktriangleright;</a>
   </div>
 
   <a href="" id="comic-link"><img id="comic-image" src=""></a>
 
   <div id="comic-title">Loading...</div>
+  <script src="dilbert.js"></script>
 </body>
 </html>

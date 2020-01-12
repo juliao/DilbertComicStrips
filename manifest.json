@@ -2,8 +2,8 @@
   "manifest_version": 2,
   "name": "Dilbert Comic Strips",
   "short_name": "DilbertComicStrips",
-  "version": "1.6.1",
-  "description": "Daily comic strips from Dilbert.com, see any previous comic strip just selecting the date, or use the commands Previous and Next.",
+  "version": "1.7.1",
+  "description": "Shows the daily comic strips from Dilbert.com . You can see too any previous comic strip just selecting the date, or using the buttons Previous and Next.",
   "icons": {
     "48": "icons/dilbert-48.png",
     "128": "icons/dilbert-128.png"
@@ -14,6 +14,7 @@
   ],
   "browser_action": {
     "default_icon": "icons/dilbert.png",
-    "default_popup": "dilbert_popup.html"
+    "default_popup": "dilbert_popup.html",
+    "browser_style": true
   }
 }

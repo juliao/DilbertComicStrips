@@ -1,0 +1,62 @@
+body {
+    margin: 0;
+}
+
+#comic-title {
+    font-size: medium;
+    font-weight: 600;
+    padding: 1%;
+}
+
+#comic-nav {
+    display: none; /* flex; */
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    height: 3em;
+}
+
+.nav-btn {
+    font-size: 24px;
+    font-weight: 600;
+    text-decoration: none;
+    color: gray;
+}
+
+.nav-btn:hover {
+    color: cornflowerblue;
+}
+
+#comic-date-form {
+    margin-top: 2%;
+}
+
+#previous {
+    margin-top: 1%;
+    margin-left: 8%;
+}
+
+#next {
+    margin-top: 1%;
+    margin-right: 10%;
+}
+
+#message-banner {
+    font-size: medium;
+    font-weight: 600;
+    padding-bottom: 0.5%;
+    padding-left: 1.5%;
+    padding-right: 1.5%;
+    background-color: black;
+    color: white;
+    position: absolute;
+    top: 14%;
+    left: 10px;
+    display: none;
+}
+
+#comic-image {
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 15px
+}
