@@ -3,7 +3,7 @@
   "name": "Dilbert Comic Strips",
   "short_name": "DilbertComicStrips",
   "version": "1.7.1",
-  "description": "Shows the daily comic strips from Dilbert.com . You can see too any previous comic strip just selecting the date, or using the buttons Previous and Next.",
+  "description": "Shows the daily comic strips from Dilbert.com . You can see any previous comic strip too.",
   "icons": {
     "48": "icons/dilbert-48.png",
     "128": "icons/dilbert-128.png"
