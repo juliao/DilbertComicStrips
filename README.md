@@ -1,6 +1,8 @@
 # DilbertComicStrips
-Web browser extension that displays the daily comic strip from Dilbert.com
+_Dilbert Comic Strips_ is a web extension that fetches and displays the daily Dilbert's comic, it works in the Chrome and Firefox web browsers.
 
+For a better user experience the extension will periodically check and cache the today's comic and notify the user about it thru the extension's toolbar icon.
+ 
 ### Available for:
 
 #### Chrome: https://chrome.google.com/webstore/detail/dilbert-comic-strips/gpjlhjgiccobkcodaeimjbcjckpcnbjp
