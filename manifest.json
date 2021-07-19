@@ -5,8 +5,8 @@
   "version": "2.0",
   "description": "Shows the daily comic strips from Dilbert.com , allowing you to navigate thru any previous comic.",
   "icons": {
-    "48": "icons/dilbert-48.png",
-    "128": "icons/dilbert-128.png"
+    "48": "icons/comic-icon-48.png",
+    "128": "icons/comic-icon-128.png"
   },
   "permissions": [
     "alarms",
@@ -19,8 +19,8 @@
     ]
   },
   "browser_action": {
-    "default_icon": "icons/dilbert.png",
-    "default_popup": "popup/dilbert.html",
+    "default_icon": "icons/comic-icon.png",
+    "default_popup": "popup/comic.html",
     "browser_style": true
   }
 }
