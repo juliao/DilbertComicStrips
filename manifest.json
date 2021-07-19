@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Dilbert Comic Strips",
   "short_name": "DilbertComicStrips",
-  "version": "2.0",
+  "version": "2.1",
   "description": "Shows the daily comic strips from Dilbert.com , allowing you to navigate thru any previous comic.",
   "icons": {
     "48": "icons/comic-icon-48.png",

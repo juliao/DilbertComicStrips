@@ -26,8 +26,8 @@
 setTimeout(updateCachedComic, 0);
 
 var browser = browser || chrome;  // Workaround for browser.* API in Chrome
-const dilbertWebsite = "https://dilbert.com";
-const dilbertTimezone = "America/Chicago";
+const comicWebsite = "https://dilbert.com";
+const comicUpdateTimezone = "America/Chicago";
 let todayDate = null;
 let cacheNameBase = null;
 
@@ -38,7 +38,7 @@ browser.alarms.create('updateCachedComic', {periodInMinutes: 15});
 
 /** Update the cache of the today's comic and notify the user thru the extension's toolbar icon */
 function updateCachedComic() {
-  todayDate = new Date().toLocaleDateString('fr-CA', {timeZone: dilbertTimezone});
+  todayDate = new Date().toLocaleDateString('fr-CA', {timeZone: comicUpdateTimezone});
   cacheNameBase = "dilbert-" + todayDate;
   let isCached = localStorage.getItem(cacheNameBase + ".desc");
 
@@ -49,14 +49,14 @@ function updateCachedComic() {
       browser.browserAction.setBadgeBackgroundColor({color: '#0000FF'});
       browser.browserAction.setBadgeText({text: '1'});
     }).catch((err) => {
-      console.debug("Error while fetching and caching Dilbert today's comic: " + err);
+      console.debug("Error while fetching and caching today's comic: " + err);
     });
   }
 }
 
 /** Returns the image tag containing the image src, the image alt and the comic url */
 async function getComicImageData(date) {
-  let comicUrl = dilbertWebsite + "/strip/" + date;
+  let comicUrl = comicWebsite + "/strip/" + date;
   let responseText = await fetchComicPage(comicUrl);
 
   let imgTag = responseText.querySelector(".img-comic");
@@ -66,9 +66,8 @@ async function getComicImageData(date) {
     return;
   }
 
-  // 2018-11-18 Fix for the incorrect URL address, since dilbert.com migrated to https,
-  // now the img.src starts with "//", not "https://", so Chrome will replace src addresses
-  // starting with "//" with "chrome-extension//", and Firefox will use "moz-extension//".
+  // In a HTTPS comicWebsite, the img.src may starts with "//", not "https://", so Chrome will replace src addresses
+  // starting with "//" with "chrome-extension//", and Firefox will use "moz-extension//", this prevents that.
   imgTag.src = imgTag.src.replace(/^.*\/\//, "https://");
   imgTag.comicUrl = comicUrl;
 

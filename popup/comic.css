@@ -2,6 +2,10 @@ body {
     margin: 0;
 }
 
+label {
+    display: none;
+}
+
 #comic-title {
     font-size: medium;
     font-weight: 600;

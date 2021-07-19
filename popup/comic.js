@@ -3,9 +3,9 @@ setTimeout(runExtension, 0);
 
 var browser = browser || chrome;  // Workaround for browser.* API in Chrome
 const backgroundPage = browser.extension.getBackgroundPage();
-const dilbertTimezone = "America/Chicago";
-const todayDate = new Date().toLocaleDateString('fr-CA', {timeZone: dilbertTimezone});
-const minDate = "1989-04-16";  // First comic available at dilbert.com
+const comicUpdateTimezone = "America/Chicago";
+const todayDate = new Date().toLocaleDateString('fr-CA', {timeZone: comicUpdateTimezone});
+const minDate = "1989-04-16";  // First comic available at comicWebsite
 const maxDate = todayDate;
 let selectedDate = null;
 let todayComicIsCached = false;
@@ -18,7 +18,7 @@ let popupComicTitle = null;
 let popupNavButtons = null;
 
 
-/** Sets the user interface and load today's comic from Dilbert.com */
+/** Sets the user interface and load today's comic from comicWebsite */
 function runExtension() {
   browser.browserAction.setBadgeText({text: ""});
   setupUI();
@@ -68,7 +68,7 @@ function setupUI() {
     loadComic(nextDate);
   });
 
-  popupPreviousButton.addEventListener("click", function (e) {
+  popupPreviousButton.addEventListener("click", function () {
     let currentDate = popupDateFormPicker.value; // Format: AAAA-MM-DD
 
     // Don't try to load a comic if the previousDate is the range
@@ -136,7 +136,7 @@ function loadComic(date) {
   } else {
     backgroundPage.getComicImageData(selectedDate).then((comicImageData) => {
       showComicImage(comicImageData);
-    }).catch(err => {
+    }).catch(() => {
       errorFetching("Error while fetching the comic image, please check your internet connection.");
     });
   }
@@ -170,8 +170,8 @@ function showComicImage(imgTag = null) {
 
 /** Returns the date increased/decreased by nDays in the format AAAA-MM-DD */
 function getDateAfterNDays(todayDate, nDays) {
-  // Get the time part of the date in the 'en-GB' format ("HH:MM:SS"), adjusted to dilbertTimezone to form the new date
-  let currentTime = new Date().toLocaleString('en-GB', {timeZone: dilbertTimezone}).slice(12);
+  // Get the time part of the date in the 'en-GB' format ("HH:MM:SS"), adjusted to comicUpdateTimezone to form the new date
+  let currentTime = new Date().toLocaleString('en-GB', {timeZone: comicUpdateTimezone}).slice(12);
   let newDate = new Date(todayDate + 'T' + currentTime);
   newDate.setDate(newDate.getDate() + nDays);
 
