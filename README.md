@@ -5,7 +5,7 @@ For a better user experience the extension will periodically check and cache the
  
 ### Available for:
 
-**21/03/2023 Update: This extension is no longer working and will not be updated, since dilbert.com is unavailable, the domain is redirecting for a new website from the author, the new comics are behind a paywall. Best regards.**
+**21/03/2023 Update: This extension is no longer working and will not be updated, since dilbert.com is unavailable, the domain is redirecting for a new website from the author, the new comics are behind a paywall. I will unpublish the extensions from Firefox and Chrome store, the links below should stop working. Best regards.**
 
 #### Chrome: https://chrome.google.com/webstore/detail/dilbert-comic-strips/gpjlhjgiccobkcodaeimjbcjckpcnbjp
 #### Firefox: https://addons.mozilla.org/en-US/firefox/addon/dilbert-comic-strips/
